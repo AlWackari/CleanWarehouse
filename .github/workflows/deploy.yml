@@ -1,5 +1,5 @@
 name: GCP Deploy
-run-name: Deploy to @${{ runner.name }} by @${{ github.actor }}
+run-name: Deploy by @${{ github.actor }}
 on:
   push:
     branches:
