@@ -1,0 +1,32 @@
+name: GCP Deploy
+run-name: Deploy to @${{ runner.name }}  by @${{ github.actor }}
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+	upgrade:
+		name: Update & Upgrade Warehouse
+		runs-on: [self-hosted, linux, x64, warehouse]
+		steps:
+			- name: Get last version of master branch
+			  uses: actions/checkout@master
+				
+			- name: Build
+			  run: sudo apt-get update && sudo apt-get install -y maven
+				
+			- name: Deploy and test
+			  run: mvn clean package
+			
+			- name: Stop old container
+			  run: sudo docker stop magazzino-app || true
+			  
+			- name: Remove old container
+			  run: sudo docker rm magazzino-app || true
+				  
+			- name: Create container
+			  run: sudo docker build -t clean-warehouse .
+			
+			- name: Start new container
+			  run: sudo docker run -d --name magazzino-app -p 80:80 --restart always clean-warehouse
