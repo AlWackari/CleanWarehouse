@@ -8,7 +8,7 @@ on:
 jobs:
   upgrade:
     name: Update & Upgrade Warehouse
-    runs-on: [self-hosted, linux, x64, warehouse]
+    runs-on: [self-hosted, Linux, x64, warehouse]
     steps:
       - name: Get last version of master branch
         uses: actions/checkout@master
