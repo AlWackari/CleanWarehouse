@@ -12,10 +12,10 @@ import core.entities.Warehouse;
 
 class TestWarehouse {
 	
-	private Warehouse ware;
+	private Warehouse<Bicycle> ware;
 	
 	@BeforeEach
-	void init() {this.ware = new Warehouse(new Vector<Bicycle>(), 1, 10, 10);}
+	void init() {this.ware = new Warehouse<Bicycle>(new Vector<Bicycle>(), 1, 10, 10);}
 	
 	@Test
 	void testLoadProduct() {

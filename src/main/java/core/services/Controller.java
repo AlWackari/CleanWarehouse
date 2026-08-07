@@ -5,62 +5,62 @@ import java.util.Vector;
 
 import javax.management.RuntimeErrorException;
 
-import core.entities.Bicycle;
-import core.entities.Vendor;
+import core.entities.Product;
 import core.entities.Warehouse;
+import core.ports.Accountable;
 import core.ports.Operations;
 import core.ports.Repository;
 
-public class Controller implements Operations {
+public class Controller<T extends Product> implements Operations<T> {
 	
-	private final Repository db;
+	private final Repository<T> db;
 	
-	public Controller(Repository db) {this.db = db;}
+	public Controller(Repository<T> db) {this.db = db;}
 
 	@Override
-	public List<Bicycle> pickSome(int n) throws IndexOutOfBoundsException {
-		List<Bicycle> list =  new Warehouse(this.db.getMagazzino(), Bicycle.pid, this.db.getMinLevel(Bicycle.pid), this.db.getCapacity())
+	public List<T> pickSome(int n) throws IndexOutOfBoundsException {
+		List<T> list =  new Warehouse<T>(this.db.getMagazzino(), T.pid, this.db.getMinLevel(T.pid), this.db.getCapacity())
 								.unloadProducts(n);
 		if(this.db.dropMagazzino(list)) return list;
 		throw new IndexOutOfBoundsException();
 	}
 
 	@Override
-	public boolean push(Bicycle b) {
-		List<Bicycle> list = new Vector<Bicycle>();
+	public boolean push(T b) {
+		List<T> list = new Vector<T>();
 		list.add(b);
 		return this.load(list).contains(b);
 	}
 	
 	@Override
-	public List<Bicycle> load(List<Bicycle> l) {
-		List<Bicycle> loaded = new Warehouse(this.db.getMagazzino(), Bicycle.pid, this.db.getMinLevel(Bicycle.pid), this.db.getCapacity())
+	public List<T> load(List<T> l) {
+		List<T> loaded = new Warehouse<T>(this.db.getMagazzino(), T.pid, this.db.getMinLevel(T.pid), this.db.getCapacity())
 				.loadProducts(l);
 		this.db.addMagazzino(loaded);
 		return loaded;
 	}
 
 	@Override
-	public boolean refill(Vendor v) throws RuntimeErrorException {
-		Warehouse m = new Warehouse(this.db.getMagazzino(), Bicycle.pid, this.db.getMinLevel(Bicycle.pid), this.db.getCapacity());
-		if(!m.check()) return this.db.addMagazzino(m.loadProducts(v.makeOrder(m.getSlots())));
+	public boolean refill(Accountable<T> v) throws RuntimeErrorException {
+		Warehouse<T> m = new Warehouse<T>(this.db.getMagazzino(), T.pid, this.db.getMinLevel(T.pid), this.db.getCapacity());
+		if(!m.check()) return this.db.addMagazzino(m.loadProducts(v.makeTo(m.getSlots())));
 		return false;
 	}
 
 	@Override
-	public List<Bicycle> list() {return this.db.getMagazzino();}
+	public List<T> list() {return this.db.getMagazzino();}
 
 	@Override
 	public int getSlots() {
-		return new Warehouse(this.db.getMagazzino(), Bicycle.pid, this.db.getMinLevel(Bicycle.pid), this.db.getCapacity())
+		return new Warehouse<T>(this.db.getMagazzino(), T.pid, this.db.getMinLevel(T.pid), this.db.getCapacity())
 				.getSlots();
 	}
 
 	@Override
-	public Bicycle pickOne(String serial) throws ClassNotFoundException{
-		Bicycle b =  new Warehouse(this.db.getMagazzino(), Bicycle.pid, this.db.getMinLevel(Bicycle.pid), this.db.getCapacity())
+	public T pickOne(String serial) throws ClassNotFoundException{
+		T b =  new Warehouse<T>(this.db.getMagazzino(), T.pid, this.db.getMinLevel(T.pid), this.db.getCapacity())
 						.unloadOne(serial);
-		List<Bicycle> list = new Vector<Bicycle>(); list.add(b);
+		List<T> list = new Vector<T>(); list.add(b);
 		if(this.db.dropMagazzino(list)) return b;
 		throw new ClassNotFoundException();
 	}

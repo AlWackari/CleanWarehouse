@@ -4,21 +4,22 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 
+import core.entities.Bicycle;
 import core.services.Controller;
-import infrastructure.input.RestAdapter;
+import infrastructure.input.BicyleRestAdapter;
 import infrastructure.output.FileAdapter;
 
 public class Start {
 
 	public static void main(String[] args) {
 		
-		Controller service;
+		Controller<Bicycle> service;
 		try { 
-			service = new Controller(new FileAdapter(Files.createFile(FileSystems.getDefault().getPath("./src/main/resources", "warehouse.db"))));
+			service = new Controller<Bicycle>(new FileAdapter<Bicycle>(Files.createFile(FileSystems.getDefault().getPath("./src/main/resources", "warehouse.db"))));
 		} catch (IOException e) { 
-			service = new Controller(new FileAdapter(FileSystems.getDefault().getPath("./src/main/resources", "warehouse.db")));}
+			service = new Controller<Bicycle>(new FileAdapter<Bicycle>(FileSystems.getDefault().getPath("./src/main/resources", "warehouse.db")));}
 		
-		RestAdapter server = new RestAdapter(service);
+		BicyleRestAdapter server = new BicyleRestAdapter(service);
 		
 		try {
 			int port = Integer.valueOf(args[0]);

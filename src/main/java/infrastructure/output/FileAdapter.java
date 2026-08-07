@@ -10,10 +10,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Vector;
 
-import core.entities.Bicycle;
+
+import core.entities.Product;
 import core.ports.Repository;
 
-public class FileAdapter implements Repository {
+public class FileAdapter<T extends Product> implements Repository<T> {
 	
 	private final File store;
 	private final Object lock = new Object();
@@ -21,11 +22,11 @@ public class FileAdapter implements Repository {
 	public FileAdapter(Path p) {store = new File(p.toUri());}
 
 	@Override
-	public List<Bicycle> getMagazzino() {return this.init();}
+	public List<T> getMagazzino() {return this.init();}
 
 	@Override
-	public boolean addMagazzino(List<Bicycle> prodotti) {
-		List<Bicycle> list = this.init();
+	public boolean addMagazzino(List<T> prodotti) {
+		List<T> list = this.init();
 		list.addAll(prodotti);
 		try {this.write(list); return true;}
 		catch (IOException e) {return false;}
@@ -35,9 +36,9 @@ public class FileAdapter implements Repository {
 	public int getMinLevel(int pid) {return 5;}
 	
 	@SuppressWarnings("unchecked")
-	private List<Bicycle> init(){
-		try {return (List<Bicycle>) this.read();}
-		catch (ClassCastException e) {return new Vector<Bicycle>();}
+	private List<T> init(){
+		try {return (List<T>) this.read();}
+		catch (ClassCastException e) {return new Vector<T>();}
 	}
 	
 	private Object read(){
@@ -51,8 +52,8 @@ public class FileAdapter implements Repository {
 		} return o;
 	}
 	
-	private void write(List<Bicycle> list) throws IOException {
-		Vector<Bicycle> data = new Vector<Bicycle>(list);
+	private void write(List<T> list) throws IOException {
+		Vector<Product> data = new Vector<Product>(list);
 		synchronized (this.lock) {
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(this.store));
 			out.writeObject(data);
@@ -64,8 +65,8 @@ public class FileAdapter implements Repository {
 	public int getCapacity() {return 10;}
 
 	@Override
-	public boolean dropMagazzino(List<Bicycle> prodotti) {
-		List<Bicycle> list = this.init();
+	public boolean dropMagazzino(List<T> prodotti) {
+		List<T> list = this.init();
 		list.removeAll(prodotti);
 		try {this.write(list); return true;}
 		catch (IOException e) {return false;}

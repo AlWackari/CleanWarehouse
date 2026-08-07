@@ -7,13 +7,15 @@ import java.util.Vector;
 
 import javax.management.RuntimeErrorException;
 
-public class Vendor {
+import core.ports.Accountable;
+
+public class Vendor implements Accountable<Bicycle>{
 	
 	final int id;
 	
 	public Vendor(int id) {this.id=id;}
 	
-	public List<Bicycle> makeOrder(int quantity) throws RuntimeErrorException{
+	public List<Bicycle> makeTo(int quantity) throws RuntimeErrorException{
 		this.connect();
 		List<Bicycle> list = new Vector<Bicycle>();
 		for (int i = 0; i < quantity; i++) {list.add(new Bicycle(String.valueOf(Time.from(Instant.now()).getTime()), 0, 1000));} 

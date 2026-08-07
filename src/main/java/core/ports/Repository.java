@@ -2,12 +2,12 @@ package core.ports;
 
 import java.util.List;
 
-import core.entities.Bicycle;
+import core.entities.Product;
 
-public interface Repository {
-	public List<Bicycle> getMagazzino();
-	public boolean dropMagazzino(List<Bicycle> prodotti);
-	public boolean addMagazzino(List<Bicycle> prodotti);
+public interface Repository<T extends Product> {
+	public List<T> getMagazzino();
+	public boolean dropMagazzino(List<T> prodotti);
+	public boolean addMagazzino(List<T> prodotti);
 	public int getMinLevel(int pid);
 	public int getCapacity();
 }

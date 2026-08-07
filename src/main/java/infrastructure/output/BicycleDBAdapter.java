@@ -10,11 +10,11 @@ import java.util.Vector;
 import core.entities.Bicycle;
 import core.ports.Repository;
 
-public abstract class DBAdapter implements Repository{
+public abstract class BicycleDBAdapter implements Repository<Bicycle>{
 	
 	private Connection db;
 	
-	protected DBAdapter(Connection conn) {
+	protected BicycleDBAdapter(Connection conn) {
 		this.db=conn;
 	}
 	

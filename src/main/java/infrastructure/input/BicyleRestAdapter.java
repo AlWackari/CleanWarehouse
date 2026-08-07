@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;;
 
-public class RestAdapter extends UIAdapter implements HttpHandler{
+public class BicyleRestAdapter extends BicycleUIAdapter implements HttpHandler{
 	
 	private static class BiciclettaJSON{
 		public final String serial; public final int color; public final double price;
@@ -24,10 +24,10 @@ public class RestAdapter extends UIAdapter implements HttpHandler{
 	
 	public final static String namespace = "/api/v1/magat/";
 	private HttpServer server;
-	private final String context = RestAdapter.namespace;
+	private final String context = BicyleRestAdapter.namespace;
 	private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 	
-	public RestAdapter(Controller c) {super(c);}
+	public BicyleRestAdapter(Controller<Bicycle> c) {super(c);}
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {

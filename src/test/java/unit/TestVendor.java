@@ -11,7 +11,7 @@ class TestVendor {
 	@Test
 	void testOrdina() {
 		Vendor v = new Vendor(1);
-		assertEquals(2, v.makeOrder(2).size());
+		assertEquals(2, v.makeTo(2).size());
 	}
 
 }

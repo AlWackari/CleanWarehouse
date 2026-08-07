@@ -8,11 +8,11 @@ import core.entities.Bicycle;
 import core.entities.Vendor;
 import core.services.Controller;
 
-abstract class UIAdapter {
+abstract class BicycleUIAdapter {
 	
-	protected final Controller service;
+	protected final Controller<Bicycle> service;
 	
-	protected UIAdapter(Controller c) {this.service=c;}
+	protected BicycleUIAdapter(Controller<Bicycle> c) {this.service=c;}
 		
 	public List<Bicycle> pick(int n) throws IndexOutOfBoundsException{return this.service.pickSome(n);}
 	

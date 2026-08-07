@@ -19,25 +19,26 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
+import core.entities.Bicycle;
 import core.services.Controller;
-import infrastructure.input.RestAdapter;
+import infrastructure.input.BicyleRestAdapter;
 import infrastructure.output.FileAdapter;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class TestAPIServerFlow {
 	
-	private final RestAdapter server;
+	private final BicyleRestAdapter server;
 	private final HttpClient client = HttpClient.newHttpClient();
-	private Controller service;
+	private Controller<Bicycle> service;
 	private int port;
 
 	TestAPIServerFlow() {
 		try {this.service = 
-				new Controller(new FileAdapter(Files.createFile(FileSystems.getDefault().getPath("./src/test/resources", "TestDB.obj"))));}
+				new Controller<Bicycle>(new FileAdapter<Bicycle>(Files.createFile(FileSystems.getDefault().getPath("./src/test/resources", "TestDB.obj"))));}
 		catch (IOException e) {this.service = 
-				new Controller(new FileAdapter(FileSystems.getDefault().getPath("./src/test/resources", "TestDB.obj")));}
+				new Controller<Bicycle>(new FileAdapter<Bicycle>(FileSystems.getDefault().getPath("./src/test/resources", "TestDB.obj")));}
 		
-		this.server = new RestAdapter(this.service);
+		this.server = new BicyleRestAdapter(this.service);
 		
 		try {this.port = this.server.start(0); System.out.println("Server running on port "+this.port);}
 		catch (IOException e) {fail("Cannot instantiate server on a free port");}
@@ -57,7 +58,7 @@ class TestAPIServerFlow {
 
 //			pick 
 	        HttpRequest request = HttpRequest.newBuilder()
-	                .uri(URI.create("http://localhost:" + this.port + RestAdapter.namespace + "pick/" + serial))
+	                .uri(URI.create("http://localhost:" + this.port + BicyleRestAdapter.namespace + "pick/" + serial))
 	                .header("Content-Type", "application/json")
 	                .DELETE()
 	                .build();
@@ -74,7 +75,7 @@ class TestAPIServerFlow {
         try {int available=0;
 //    		get available slots
     		HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:" + this.port + RestAdapter.namespace+"/slots"))
+                    .uri(URI.create("http://localhost:" + this.port + BicyleRestAdapter.namespace+"/slots"))
                     .header("Content-Type", "application/json")
                     .GET()
                     .build();
@@ -87,7 +88,7 @@ class TestAPIServerFlow {
 			String ID = String.valueOf(Time.from(Instant.now()).getTime());
 	        String jsonBici = "{\"serial\":\""+ID+"\", \"color\":101010, \"price\":250.00}";
 	        request = HttpRequest.newBuilder()
-	                .uri(URI.create("http://localhost:" + this.port + RestAdapter.namespace))
+	                .uri(URI.create("http://localhost:" + this.port + BicyleRestAdapter.namespace))
 	                .header("Content-Type", "application/json")
 	                .POST(BodyPublishers.ofString(jsonBici))
 	                .build();
@@ -122,7 +123,7 @@ class TestAPIServerFlow {
 	private HttpResponse<String> getWarehouse() throws IOException, InterruptedException{
 //		get all
 		HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + this.port + RestAdapter.namespace))
+                .uri(URI.create("http://localhost:" + this.port + BicyleRestAdapter.namespace))
                 .header("Content-Type", "application/json")
                 .GET()
                 .build();
@@ -131,7 +132,7 @@ class TestAPIServerFlow {
 	
 	private HttpResponse<String> refill() throws IOException, InterruptedException{
 		HttpRequest request = HttpRequest.newBuilder()
-	            .uri(URI.create("http://localhost:" + this.port + RestAdapter.namespace+"/refill"))
+	            .uri(URI.create("http://localhost:" + this.port + BicyleRestAdapter.namespace+"/refill"))
 	            .header("Content-Type", "application/json")
 	            .POST(BodyPublishers.ofString(new String()))
 	            .build();
