@@ -7,9 +7,9 @@ import java.util.Vector;
 
 import javax.management.RuntimeErrorException;
 
-import core.ports.Accountable;
+import core.ports.Accountability;
 
-public class Vendor implements Accountable<Bicycle>{
+public class Vendor implements Accountability<Bicycle>{
 	
 	final int id;
 	

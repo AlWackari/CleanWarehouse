@@ -4,6 +4,6 @@ import java.util.List;
 
 import core.entities.Product;
 
-public interface Accountable<T extends Product> {
+public interface Accountability<T extends Product> {
 	public List<T> makeTo(int quantity);
 }

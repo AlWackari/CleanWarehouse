@@ -27,6 +27,16 @@
   	<plugins>
 		<plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-surefire-plugin</artifactId>
+		    <version>3.2.5</version> <!-- o la versione che hai già -->
+		    <configuration>
+		        <environmentVariables>
+		            <MAGAT_ADMIN_KEY>secret123</MAGAT_ADMIN_KEY>
+		        </environmentVariables>
+		    </configuration>
+		</plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-assembly-plugin</artifactId>
 		    <version>3.7.0</version>
 		    <configuration>

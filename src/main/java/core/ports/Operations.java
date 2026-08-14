@@ -1,15 +1,18 @@
 package core.ports;
 
+import java.io.IOException;
 import java.util.List;
-import javax.management.RuntimeErrorException;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import core.entities.Product;
 
 public interface Operations<T extends Product> {
-	public List<T> pickSome(int n) throws IndexOutOfBoundsException;
-	public T pickOne(String serial) throws ClassNotFoundException;
-	public boolean push(T b);
-	public List<T> load(List<T> l);
-	public List<T> list();
-	public boolean refill(Accountable<T> vendor) throws RuntimeErrorException;
-	public int getSlots();
+	public Map<String, List<T>> pickSome(int n) throws IndexOutOfBoundsException;
+	public Entry<String, T> pickOne(String serial) throws NoSuchElementException;
+	public Entry<String, T> pickOne() throws NoSuchElementException;
+	public Map<String, List<T>> put(List<T> p) throws IOException;
+	public List<T> inventory();
+	public boolean refill(Accountability<T> vendor) throws IOException;
+	public int availability();
 }

@@ -1,22 +1,23 @@
 package infrastructure.input;
 
+import java.io.IOException;
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
-
+import java.util.Map;
 import core.entities.Bicycle;
 import core.entities.Vendor;
-import core.services.Controller;
+import core.services.IniController;
+import core.services.OpController;
 
 abstract class BicycleUIAdapter {
 	
-	protected final Controller<Bicycle> service;
+	protected OpController<Bicycle> service;
+	protected final IniController adm;
 	
-	protected BicycleUIAdapter(Controller<Bicycle> c) {this.service=c;}
+	protected BicycleUIAdapter(OpController<Bicycle> c, IniController adm) {this.service=c; this.adm=adm;}
 		
-	public List<Bicycle> pick(int n) throws IndexOutOfBoundsException{return this.service.pickSome(n);}
+	public Map<String, List<Bicycle>> pick(int n) throws IndexOutOfBoundsException{return this.service.pickSome(n);}
 	
-	public List<Bicycle> load(List<Bicycle> list) {return this.service.load(list);}
+	public Map<String, List<Bicycle>> load(List<Bicycle> list) {return this.service.put(list);}
 	
-	public void refill(Vendor v) throws RuntimeErrorException{this.service.refill(v);}
+	public void refill(Vendor v) throws IOException{this.service.refill(v);}
 }
