@@ -32,11 +32,13 @@ public class BicycleRestAdapter extends BicycleUIAdapter implements HttpHandler{
 							  @JsonProperty("color") int color,
 							  @JsonProperty("price") double price) {this.serial=serial; this.color=color; this.price=price;}}
 	
-	public final static String namespace = "/api/v1/magat/";
-	public final static String bikenode = "/bike";
-	public final static String admin = "/admin/init";
+	public final static String namespace = "/api/v1/magat", bikenode = "/bike", admin = "/admin/init", refill = "/refill", slots = "/slots",
+							   pick = "/pick/", context = BicycleRestAdapter.namespace,
+							   welcome = "Welcome to MAGAT WHS<br>You can: <ul><li>View the inventory @"+bikenode+"</li><li>View the availabilty @+"
+									   	 +slots+"</li><li>Refill the WH @"+refill+"</li><li>Create a bike with a put @"+bikenode+
+									   	 "</li><li>Pick a bike with a delete @"+bikenode+"/serial</li><li>Init the WM bins @"+admin+"</li></ul>",
+							   html = "text/html; charset=UTF-8", plain="text/plain; charset=UTF-8";
 	private HttpServer server;
-	private final String context = BicycleRestAdapter.namespace;
 	private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 	private final Repository<Bicycle> repo;
 	
@@ -44,60 +46,67 @@ public class BicycleRestAdapter extends BicycleUIAdapter implements HttpHandler{
 
 	@Override
 	public void handle(HttpExchange exchange) throws IOException {
-		String[] pathString = exchange.getRequestURI().getPath().split(this.context);
+		String[] pathString = exchange.getRequestURI().getPath().split(context);
 		String method =exchange.getRequestMethod();
 		String code;
 		int status;
-		
-		switch (method) {
-		case "GET":
-			this.checkInit(exchange);
-			if(pathString[1].toLowerCase().equals(bikenode)) 
-				this.send(exchange, 200, this.mapper.writeValueAsString(super.service.inventory()));
-			else if(pathString[1].toLowerCase().equals("/slots"))
-				this.send(exchange, 200, this.mapper.writeValueAsString(super.service.availability()));
-			else exchange.sendResponseHeaders(404, -1);
-			break;
-		case "POST":
-			if(pathString[1].toLowerCase().equals(bikenode)) {
-				this.checkInit(exchange);
-				BiciclettaJSON bici = this.mapper.readValue(exchange.getRequestBody(), BiciclettaJSON.class);
-				Bicycle b = new Bicycle(bici.serial, bici.color, bici.price);
-				List<Bicycle> list = new ArrayList<Bicycle>(); list.add(b);
-				Map<String, List<Bicycle>> map = this.service.put(list);
-				status = map.entrySet().iterator().next().getValue().contains(b)?200:400;
-				code = status==200?"OK":"KO";
-				this.send(exchange, status, code);}
-			else if(pathString[1].toLowerCase().equals(bikenode+"/refill")) {
-				this.checkInit(exchange);
-				status = this.service.refill(new Vendor(10))? 200 : 400;
-				code = status==200?"OK":"KO";
-				this.send(exchange, status, code);}
-			else if(pathString[1].toLowerCase().equals("/admin/init")) {
-				String adm = exchange.getRequestHeaders().getFirst("X-Admin-Key");
-				if(!System.getenv("MAGAT_ADMIN_KEY").equals(adm)) exchange.sendResponseHeaders(401, -1);
-				List<StatefulBin<Product>> bins = this.mapper.readValue(exchange.getRequestBody(), new TypeReference<List<StatefulBin<Product>>>(){});
-				status = this.adm.initDB(bins)?200 : 400;
-				code = status==200?"OK":"KO";
-				if(super.service==null) super.service = new OpController<Bicycle>(this.repo);
-				this.send(exchange, status, code);
-			}
-			else exchange.sendResponseHeaders(404, -1);
-			break;
-		case "DELETE":
-			if(pathString.length==0) exchange.sendResponseHeaders(404, -1);
-			else if(pathString[1].toLowerCase().contains("pick/")) {
-				String serial = pathString[1].toLowerCase().split("pick/")[1];
-				try{this.send(exchange, 200, this.mapper.writeValueAsString(this.service.pickOne(serial)));}
-				catch (ArrayIndexOutOfBoundsException e) {exchange.sendResponseHeaders(404, -1);}}
-			else exchange.sendResponseHeaders(404, -1); break;
-		default: exchange.sendResponseHeaders(404, -1);}
+		System.out.println("HTTP Requst " + method + " | PATH: " + exchange.getRequestURI());
+		try {
+			switch (method) {
+			case "GET":
+				if(pathString.length<1) this.send(exchange, 200, this.mapper.writeValueAsString(welcome), html);
+				else {
+					if(!this.checkInit(exchange)) break;
+					if(pathString[1].toLowerCase().equals(bikenode)) 
+						this.send(exchange, 200, this.mapper.writeValueAsString(super.service.inventory()), html);
+					else if(pathString[1].toLowerCase().equals(slots))
+						this.send(exchange, 200, this.mapper.writeValueAsString(super.service.availability()), plain);
+					else this.send(exchange, 404, "Service not found", plain);
+				} break;
+			case "POST":
+				if(pathString.length<1) this.send(exchange, 404, "Service not found", plain);
+				else if(pathString[1].toLowerCase().equals(bikenode)) {
+					if(!this.checkInit(exchange)) break;
+					BiciclettaJSON bici = this.mapper.readValue(exchange.getRequestBody(), BiciclettaJSON.class);
+					Bicycle b = new Bicycle(bici.serial, bici.color, bici.price);
+					List<Bicycle> list = new ArrayList<Bicycle>(); list.add(b);
+					Map<String, List<Bicycle>> map = this.service.put(list);
+					status = map.entrySet().iterator().next().getValue().contains(b)?200:400;
+					code = status==200?"OK":"KO";
+					this.send(exchange, status, code, plain);}
+				else if(pathString[1].toLowerCase().equals(bikenode+refill)) {
+					if(!this.checkInit(exchange)) break;
+					status = this.service.refill(new Vendor(10))? 200 : 400;
+					code = status==200?"OK":"KO";
+					this.send(exchange, status, code, plain);}
+				else if(pathString[1].toLowerCase().equals(admin)) {
+					String envKey = System.getenv("MAGAT_ADMIN_KEY");
+					if(envKey==null) {this.send(exchange, 400, "Missing environment pwd variable", plain); break;}
+					String adm = exchange.getRequestHeaders().getFirst("X-Admin-Key");
+					if(!envKey.equals(adm)) {this.send(exchange, 404, "Service not found", plain); break;}
+					List<StatefulBin<Product>> bins = this.mapper.readValue(exchange.getRequestBody(), new TypeReference<List<StatefulBin<Product>>>(){});
+					status = this.adm.initDB(bins)?200 : 400;
+					code = status==200?"OK":"KO";
+					if(super.service==null) super.service = new OpController<Bicycle>(this.repo);
+					this.send(exchange, status, code, plain);}
+				else this.send(exchange, 404, "Service not found", plain);
+				break;
+			case "DELETE":
+				if(!this.checkInit(exchange)) break;
+				if(pathString.length==0) this.send(exchange, 404, "Service not found", plain);
+				else if(pathString[1].toLowerCase().contains(pick)) {
+					String serial = pathString[1].toLowerCase().split(pick)[1];
+					try{this.send(exchange, 200, this.mapper.writeValueAsString(this.service.pickOne(serial)), plain);}
+					catch (ArrayIndexOutOfBoundsException e) {this.send(exchange, 400, "Serial not found", plain);}}
+				else this.send(exchange, 404, "Service not found", plain); break;
+			default: this.send(exchange, 404, "Service not found", plain);}}
+		catch(Exception e) {e.printStackTrace(); try{this.send(exchange, 500, "Internal Server Error :(", plain);} catch (Exception e1) {}}
 		exchange.getRequestBody().close(); exchange.close();
 	}
 	
 	public int start(int port) throws IOException {
 		this.server = HttpServer.create(new InetSocketAddress(port), 0);
-		this.server.createContext(this.context, this);
+		this.server.createContext(context, this);
 		this.server.setExecutor(Executors.newCachedThreadPool());
 		this.server.start();	
 		return server.getAddress().getPort();
@@ -105,9 +114,10 @@ public class BicycleRestAdapter extends BicycleUIAdapter implements HttpHandler{
 	
 	public void stop(int seconds) {if(this.server != null) this.server.stop(seconds);}
 	
-	private void send(HttpExchange exchange, int status, String response) {
+	private void send(HttpExchange exchange, int status, String response, String type) {
 		try {
 			byte[] bytes = response.getBytes("UTF-8");
+			exchange.getResponseHeaders().set("Content-Type", type);
 			exchange.sendResponseHeaders(status, bytes.length);
 			OutputStream os = exchange.getResponseBody();
 			os.write(bytes);
@@ -115,5 +125,8 @@ public class BicycleRestAdapter extends BicycleUIAdapter implements HttpHandler{
 		} catch (IOException e) {}
 	}
 	
-	private void checkInit(HttpExchange exchange) throws IOException {if(this.service == null) exchange.sendResponseHeaders(404, -1);}
+	private boolean checkInit(HttpExchange exchange) throws IOException {
+	    if(this.service == null) {this.send(exchange, 400, "Initialization missing", plain); return false;}
+	    return true;
+	}
 }

@@ -11,22 +11,26 @@ jobs:
     runs-on: [self-hosted, Linux, x64, warehouse]
     steps:
       - name: Get last version of master branch
-        uses: actions/checkout@master
-        
-      - name: Build
-        run: sudo apt-get update && sudo apt-get install -y maven
-        
+        uses: actions/checkout@v4
+
+      - name: Set up JDK and Maven
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
       - name: Deploy and test
         run: mvn clean package
-      
+
       - name: Stop old container
         run: sudo docker stop magazzino-app || true
-        
+
       - name: Remove old container
         run: sudo docker rm magazzino-app || true
-          
+
       - name: Create container
         run: sudo docker build -t clean-warehouse .
-      
+
       - name: Start new container
         run: sudo docker run -d --name magazzino-app -p 80:80 --restart always clean-warehouse

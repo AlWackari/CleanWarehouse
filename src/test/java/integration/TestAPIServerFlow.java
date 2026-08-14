@@ -63,6 +63,18 @@ class TestAPIServerFlow {
 	}
 	
 	@Test
+	void testWelcome() {
+		try {
+			HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace))
+					.header("Content-Type", "application/json")
+					.GET().build();
+			HttpResponse<String> response = this.client.send(request, BodyHandlers.ofString());
+			assertTrue(response.body().contains("Welcome"));
+		} catch (IOException | InterruptedException e) {fail("Destination unreacheable");}
+	}
+	
+	@Test
 	void testPick() {
 		try {
 //			get first or refill and get
@@ -76,10 +88,9 @@ class TestAPIServerFlow {
 
 //			pick 
 	        HttpRequest request = HttpRequest.newBuilder()
-	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + "pick/" + serial))
+	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.pick + serial))
 	                .header("Content-Type", "application/json")
-	                .DELETE()
-	                .build();
+	                .DELETE().build();
 //			check
 	        try { response = this.client.send(request, BodyHandlers.ofString());
 	        	  assertTrue(response.body().contains(serial));}
@@ -93,10 +104,9 @@ class TestAPIServerFlow {
         try {int available=0;
 //    		get available slots
     		HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+"/slots"))
+                    .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+BicycleRestAdapter.slots))
                     .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
+                    .GET().build();
     		
             HttpResponse<String> response;
         	 response = this.client.send(request, BodyHandlers.ofString());
@@ -108,8 +118,7 @@ class TestAPIServerFlow {
 	        request = HttpRequest.newBuilder()
 	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.bikenode))
 	                .header("Content-Type", "application/json")
-	                .POST(BodyPublishers.ofString(jsonBici))
-	                .build();
+	                .POST(BodyPublishers.ofString(jsonBici)).build();
 	        response = this.client.send(request, BodyHandlers.ofString());
 
 //			check
@@ -143,17 +152,15 @@ class TestAPIServerFlow {
 		HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.bikenode))
                 .header("Content-Type", "application/json")
-                .GET()
-                .build();
+                .GET().build();
 		return this.client.send(request, BodyHandlers.ofString());
 	}
 	
 	private HttpResponse<String> refill() throws IOException, InterruptedException{
 		HttpRequest request = HttpRequest.newBuilder()
-	            .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+BicycleRestAdapter.bikenode+"/refill"))
+	            .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+BicycleRestAdapter.bikenode+BicycleRestAdapter.refill))
 	            .header("Content-Type", "application/json")
-	            .POST(BodyPublishers.ofString(new String()))
-	            .build();
+	            .POST(BodyPublishers.ofString(new String())).build();
 		return this.client.send(request, BodyHandlers.ofString());
 	}
 	
