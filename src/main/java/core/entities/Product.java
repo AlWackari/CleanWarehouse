@@ -6,13 +6,12 @@ import java.util.Objects;
 public abstract class Product implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
-	public static int pid;
-	public final String desc;
-	public final String serial;
+	public final int pid;
+	public final String desc, serial;
 	public final double price;
 
 	protected Product(int pid, String desc, String serial, double price) {
-		Product.pid = pid;
+		this.pid = pid;
 		this.desc = desc;
 		this.serial = serial;
 		this.price = price;

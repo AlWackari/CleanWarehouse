@@ -1,5 +1,5 @@
 Dim http, json, url
-url = "http://localhost/api/v1/magat/"
+url = "http://localhost/api/v1/magat/bike"
 json = "{""serial"":333,""color"":""101010"",""price"":540.99}"
 
 Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")

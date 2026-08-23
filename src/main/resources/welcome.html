@@ -1,0 +1,63 @@
+<html>
+	<head><title>Warehouse Management</title>
+		<style type="text/css">
+			body {	margin: 0;
+					min-height: 100vh;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+					background-color: #0f172a;
+					color: #f8fafc; }
+			.welcome-card {	background: #1e293b;
+							padding: 2.5rem;
+						    border-radius: 12px;
+						    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+						    text-align: center;
+						    border: 1px solid #334155;
+						    max-width: 420px;
+						    width: 90%; }
+			.welcome-card h1 {margin-top: 0; font-size: 1.75rem; color: #38bdf8;}
+			.welcome-card p {color: #94a3b8; line-height: 1.5;}
+			.btn-enter {display: inline-block;
+			    		margin-top: 1.5rem;
+			    		padding: 0.75rem 1.5rem;
+					    background-color: #38bdf8;
+					    color: #0f172a;
+					    font-weight: 600;
+					    text-decoration: none;
+					    border-radius: 6px;
+					    transition: background-color 0.2s ease; }
+			.btn-enter:hover {background-color: #0284c7;color: #ffffff;}
+			.welcome-card ul {	list-style: none;
+								padding: 0;
+							    margin: 1.5rem 0 0 0;
+							    display: flex;
+							    flex-direction: column;
+							    gap: 0.75rem;
+							    text-align: left; }
+			.welcome-card li {	background: #0f172a;
+								padding: 0.6rem 0.9rem;
+							    border-radius: 6px;
+							    border: 1px solid #334155;
+							    font-size: 0.95rem;
+							    display: flex;
+							    justify-content: space-between;
+							    align-items: center; }
+			.welcome-card a {color: #38bdf8; text-decoration: none; font-weight: 500;}			
+			.welcome-card a:hover {text-decoration: underline; color: #7dd3fc;}
+		</style>
+	</head>
+	<body>
+		<div class="welcome-card">
+			<h1>Welcome to MAGAT WHS</h1>
+			From here you can: 
+				<ul><li>View the inventory <a href="./magat/bike">@bike</a></li>
+					<li>View the availabilty <a href="./magat/slots">@slots</a></li>
+					<li>Refill the WH <a href="./magat/refill">@refill</a></li>
+					<li>Create a bike with a put <a href="./magat/bike">@bike</a></li>
+					<li>Pick a bike with a delete @bike/#your-serial#</li>
+					<li>Init the WM bins with a put <a href="./magat/admin">@admin</a></li></ul>		
+		</div>
+	</body>
+</html>

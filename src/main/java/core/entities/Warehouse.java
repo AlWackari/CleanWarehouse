@@ -14,7 +14,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Warehouse<T extends Product> {
-		
+	
+	static public String _dupli = "_DUPLICATES";
 	private List<T> products = new ArrayList<T>(), p_snapshot;
 	private final Map<String, Storage.Node> storage;
 	private Map<String, Storage.Node> s_snapshot;
@@ -50,6 +51,8 @@ public class Warehouse<T extends Product> {
 		this.timeout = Executors.newSingleThreadScheduledExecutor().schedule(()->{this.rollback();}, timeout, unit);
 	}
 	
+	public boolean containsBin(Storage.StatefulBin<T> bin) {return this.storage.containsKey(bin.path);}
+	
 	public void beginTS() {this.beginTS(30, TimeUnit.SECONDS);}
 	
 	public void commit() throws TimeoutException{
@@ -69,7 +72,7 @@ public class Warehouse<T extends Product> {
 			try {String bin = this.put(prod);
 				 map.computeIfAbsent(bin, k->new ArrayList<T>()).add(prod);}
 			catch (IllegalStateException e) {map.put(e.getMessage(), null); return;}
-			catch (IllegalArgumentException e1) {map.computeIfAbsent("_DUPLICATES", k->new ArrayList<T>()).add(prod);} }); 
+			catch (IllegalArgumentException e1) {map.computeIfAbsent(_dupli, k->new ArrayList<T>()).add(prod);} }); 
 		return map;
 	}
 	

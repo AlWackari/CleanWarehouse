@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Vector;
 
+import javax.management.InstanceAlreadyExistsException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,6 +23,7 @@ import infrastructure.output.FileAdapter;
 class TestControllers {
 	
 	private OpController<Bicycle> admin;
+	private IniController root;
 	
 	@TempDir
     Path tempDir;
@@ -28,8 +31,10 @@ class TestControllers {
 	@BeforeEach
 	void setUp(){
 		Path path = tempDir.resolve("test-warehous.dat");
-		new IniController(new FileAdapter<Product>(path)).initDB(StorageConfig.createStorage());
-		this.admin = new OpController<Bicycle>(new FileAdapter<Bicycle>(path));		
+		try {this.root =  new IniController(new FileAdapter<Product>(path));
+			 this.root.initDB(StorageConfig.createStorage());
+			 this.admin = new OpController<Bicycle>(new FileAdapter<Bicycle>(path));}
+		catch (IOException | InstanceAlreadyExistsException e) {fail("Cannot create reposository");}
 	}
 
 	@Test
@@ -84,5 +89,11 @@ class TestControllers {
 
 	@Test
 	void testRefill() throws IOException {assertTrue(this.admin.refill(new Vendor(123)));}
-
+	
+	@Test
+	void testInitAlreadyDone() {assertThrows(InstanceAlreadyExistsException.class, () -> this.root.initDB(StorageConfig.createStorage()));}
+	
+	@Test
+	void testAddExistingBin() {assertThrows(InstanceAlreadyExistsException.class, () -> this.root.addBin(StorageConfig.createStorage().getStatefulBin().getFirst()));}
+	
 }

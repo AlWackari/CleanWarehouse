@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
+import core.entities.Audit;
 import core.entities.Product;
 import core.entities.Warehouse;
 import core.ports.Accountability;
@@ -61,6 +62,9 @@ public class OpController<T extends Product> implements Operations<T> {
 		w.beginTS(); if(this.finalizeAdd(w.put(list), w).isEmpty()) throw new IOException();
 		return true;
 	}
+
+	@Override
+	public Audit getAudit(List<String> bins) {return this.db.getAudit(bins);}
 	
 	private Entry<String, T> finalizeOneDel(Entry<String, T> prod, Warehouse<T> w) {
 		List<T> list = new ArrayList<T>(); list.add(prod.getValue());

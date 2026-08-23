@@ -33,4 +33,4 @@ jobs:
         run: sudo docker build -t clean-warehouse .
 
       - name: Start new container
-        run: sudo docker run -d --name magazzino-app -p 80:80 --restart always clean-warehouse
+        run: sudo docker run -d --name magazzino-app -p 80:80 -v ~/warehouse-data:/app/data --restart always clean-warehouse
