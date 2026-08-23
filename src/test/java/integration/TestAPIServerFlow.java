@@ -26,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 import config.StorageConfig;
 import core.entities.Bicycle;
 import core.entities.Product;
+import infrastructure.context.Context;
 import infrastructure.input.BicycleRestAdapter;
 import infrastructure.output.FileAdapter;
 
@@ -39,28 +40,25 @@ class TestAPIServerFlow {
 	
 	@BeforeAll
 	void setUp(@TempDir Path tempDir){
-		this.server = new BicycleRestAdapter(new FileAdapter<Bicycle>(tempDir.resolve("test-warehous.dat")), 
-											 new FileAdapter<Product>(tempDir.resolve("test-warehous.dat")));
-		try {this.port = this.server.start(0); System.out.println("Server running on port "+this.port);}
+		try {this.server = new BicycleRestAdapter(new FileAdapter<Bicycle>(tempDir.resolve("test-warehous.dat")), 
+			  									  new FileAdapter<Product>(tempDir.resolve("test-warehous.dat")));
+			 this.port = this.server.start(0); System.out.println("Server running on port "+this.port);}
 		catch (IOException e) {fail("Cannot instantiate server on a free port");}
 	}
 	
 	@Test
 	@Order(1)
 	void testAdminSetup() {
-		try {
-			String jsonBici = StorageConfig.getStorageJSON();
-			HttpRequest request = HttpRequest.newBuilder()
-        				.uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.admin))
-        				.header("Content-Type", "application/json")
-        				.header("X-Admin-Key", "secret123")
-        				.POST(BodyPublishers.ofString(jsonBici))
-        				.build();
-        
-			HttpResponse<String> response = this.client.send(request, BodyHandlers.ofString());
-			assertTrue(response.body().contains("OK"));
-		} catch (IOException | InterruptedException e) {{fail("Destination unreacheable");}}
+		try {assertTrue(this.setup().body().contains("OK"));}
+		catch (IOException | InterruptedException e) {{fail("Destination unreacheable");}}
 	}
+	
+	@Test
+	@Order(2)
+	void testSetupTwice() {
+		try {assertTrue(!this.setup().body().contains("OK"));}
+		catch (IOException | InterruptedException e) {{fail("Destination unreacheable");}}
+	}	
 	
 	@Test
 	void testWelcome() {
@@ -68,6 +66,7 @@ class TestAPIServerFlow {
 			HttpRequest request = HttpRequest.newBuilder()
 					.uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace))
 					.header("Content-Type", "application/json")
+    				.header("X-User", "TestUser")
 					.GET().build();
 			HttpResponse<String> response = this.client.send(request, BodyHandlers.ofString());
 			assertTrue(response.body().contains("Welcome"));
@@ -90,6 +89,7 @@ class TestAPIServerFlow {
 	        HttpRequest request = HttpRequest.newBuilder()
 	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.pick + serial))
 	                .header("Content-Type", "application/json")
+    				.header("X-User", "TestUser")
 	                .DELETE().build();
 //			check
 	        try { response = this.client.send(request, BodyHandlers.ofString());
@@ -100,12 +100,32 @@ class TestAPIServerFlow {
 	}
 
 	@Test
+	void testPutTwice() {
+		try {
+//			create
+			String ID = String.valueOf(Time.from(Instant.now()).getTime());
+	        String jsonBici = "{\"serial\":\""+ID+"\", \"color\":101010, \"price\":250.00}";
+	        HttpRequest request = HttpRequest.newBuilder()
+	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.bikenode))
+	                .header("Content-Type", "application/json")
+					.header("X-User", "TestUser")
+	                .POST(BodyPublishers.ofString(jsonBici)).build();
+			this.client.send(request, BodyHandlers.ofString());
+//			twice
+			HttpResponse<String> response = this.client.send(request, BodyHandlers.ofString());
+			assertFalse(response.statusCode()==200);
+			
+		} catch (IOException | InterruptedException e) {fail("Destination unreacheable");}
+	}
+	
+	@Test
 	void testCreateNewWithAvailabilityCheck() {
         try {int available=0;
 //    		get available slots
     		HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+BicycleRestAdapter.slots))
                     .header("Content-Type", "application/json")
+    				.header("X-User", "TestUser")
                     .GET().build();
     		
             HttpResponse<String> response;
@@ -118,6 +138,7 @@ class TestAPIServerFlow {
 	        request = HttpRequest.newBuilder()
 	                .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.bikenode))
 	                .header("Content-Type", "application/json")
+    				.header("X-User", "TestUser")
 	                .POST(BodyPublishers.ofString(jsonBici)).build();
 	        response = this.client.send(request, BodyHandlers.ofString());
 
@@ -160,11 +181,23 @@ class TestAPIServerFlow {
 		HttpRequest request = HttpRequest.newBuilder()
 	            .uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace+BicycleRestAdapter.bikenode+BicycleRestAdapter.refill))
 	            .header("Content-Type", "application/json")
+				.header("X-User", "TestUser")
 	            .POST(BodyPublishers.ofString(new String())).build();
 		return this.client.send(request, BodyHandlers.ofString());
 	}
 	
-	@AfterAll
-	public void stop(){this.server.stop(0);}
+	private HttpResponse<String> setup() throws IOException, InterruptedException{
+		String jsonBici = StorageConfig.getStorageJSON();
+		HttpRequest request = HttpRequest.newBuilder()
+    				.uri(URI.create("http://localhost:" + this.port + BicycleRestAdapter.namespace + BicycleRestAdapter.admin))
+    				.header("Content-Type", "application/json")
+    				.header("X-Admin-Key", "secret123")
+    				.header("X-User", "TestUser")
+    				.POST(BodyPublishers.ofString(jsonBici))
+    				.build();
+		return this.client.send(request, BodyHandlers.ofString());
+	}
 	
+	@AfterAll
+	public void stop(){this.server.stop(0); Context.clear();}
 }

@@ -32,7 +32,8 @@ public class Storage{
 		public boolean unload(Product p) {return this.products.remove(p);}
 		public Product unload() throws InterruptedException {return this.products.take();}
 		public Product unload(String serial) throws NoSuchElementException {
-			return this.products.stream().filter(item->item.serial.equals(serial)).findFirst().get();
+			Product p = this.products.stream().filter(item->item.serial.equals(serial)).findFirst().get();
+			this.products.remove(p); return p;
 		}
 		public int remainingCapacity() {return this.products.remainingCapacity();}
 		public List<Product> inventory(){

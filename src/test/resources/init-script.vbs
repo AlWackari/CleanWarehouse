@@ -5,7 +5,7 @@ Dim http, url, body, responseMsg
 Set http = CreateObject("MSXML2.ServerXMLHTTP")
 
 url = "http://127.0.0.1:80/api/v1/magat/admin/init"
-body = "[{""path"":""MAGAZZINO/ZONA_A/BIN_01/"",""capacity"":10,""products"":[]}]"
+body = "[{""path"":""MAGAZZINO/ZONA_A/BIN_02/"",""capacity"":15,""products"":[]}]"
 
 WScript.Echo "Invio richiesta POST in corso..."
 

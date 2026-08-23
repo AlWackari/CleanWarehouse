@@ -13,10 +13,12 @@ public class Start {
 
 	public static void main(String[] args) {
 		
-		Path path = Path.of("warehouse.db");
-		if(Files.notExists(path)) try{Files.createFile(path);} catch (IOException e) {System.out.println(e.getMessage()); System.exit(1);}
-		
-		BicycleRestAdapter server = new BicycleRestAdapter(new FileAdapter<Bicycle>(path), new FileAdapter<Product>(path));
+		Path path = Path.of("./data/warehouse.db");
+		BicycleRestAdapter server = null;
+		try { Files.createDirectories(path.getParent());
+			 if(Files.notExists(path)) Files.createFile(path);
+			 server = new BicycleRestAdapter(new FileAdapter<Bicycle>(path), new FileAdapter<Product>(path));}
+		catch (IOException  e) {System.out.println(e.getMessage()); System.exit(1);}
 		
 		try { int port = Integer.valueOf(args[0]); server.start(port); System.out.println("Server running on port "+port);}
 		catch (IOException | NumberFormatException e) {System.out.println(e.getMessage());}

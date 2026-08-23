@@ -1,3 +1,7 @@
+[![GCP Deploy](https://github.com/AlWackari/CleanWarehouse/actions/workflows/deploy.yml/badge.svg)](https://github.com/AlWackari/CleanWarehouse/actions/workflows/deploy.yml)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)
+
 ## DESCRIPTION
 Clean Warehouse is a WMS sample written in JAVA.
 It collects any type of Product logically and physically tracking his position inside the storage system, managing concurrency and allowing updates only through a transaction type mechanism.
@@ -16,3 +20,6 @@ Clean Warehouse has been created to successfully implement and train the followi
 * CI/CD Pipeline through GitHub Actions
 * Containerization with Docker
 * Cloud Platform on Google
+
+## Contributing
+Please see our [Contributing Guidelines](CONTRIBUTING.md) before opening a pull request.

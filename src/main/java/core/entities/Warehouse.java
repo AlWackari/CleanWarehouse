@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
@@ -13,8 +14,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.management.InstanceNotFoundException;
+
 public class Warehouse<T extends Product> {
-		
+	
+	static public String _dupli = "_DUPLICATES";
 	private List<T> products = new ArrayList<T>(), p_snapshot;
 	private final Map<String, Storage.Node> storage;
 	private Map<String, Storage.Node> s_snapshot;
@@ -50,6 +54,8 @@ public class Warehouse<T extends Product> {
 		this.timeout = Executors.newSingleThreadScheduledExecutor().schedule(()->{this.rollback();}, timeout, unit);
 	}
 	
+	public boolean containsBin(Storage.StatefulBin<T> bin) {return this.storage.containsKey(bin.path);}
+	
 	public void beginTS() {this.beginTS(30, TimeUnit.SECONDS);}
 	
 	public void commit() throws TimeoutException{
@@ -69,14 +75,15 @@ public class Warehouse<T extends Product> {
 			try {String bin = this.put(prod);
 				 map.computeIfAbsent(bin, k->new ArrayList<T>()).add(prod);}
 			catch (IllegalStateException e) {map.put(e.getMessage(), null); return;}
-			catch (IllegalArgumentException e1) {map.computeIfAbsent("_DUPLICATES", k->new ArrayList<T>()).add(prod);} }); 
+			catch (IllegalArgumentException e1) {map.computeIfAbsent(_dupli, k->new ArrayList<T>()).add(prod);} }); 
 		return map;
 	}
 	
 	private String put(T b) throws IllegalStateException{
 		if(this.products.contains(b)) throw new IllegalArgumentException(b.serial+" is already in the store");
 		if(this.remainingCapacity()<1) throw new IllegalStateException("Warehouse is full");
-		String key = this.loadBin(b);
+		String key="";
+		try {key = this.loadBin(b, Optional.empty());} catch (InstanceNotFoundException e) {}
 		this.products.add(b); 
 		return key;
 	}
@@ -109,13 +116,17 @@ public class Warehouse<T extends Product> {
 
 	public int remainingCapacity() {return this.size-this.products.size();}
 	
-	private String loadBin(Product o) throws IllegalStateException{
-		Iterator<Entry<String, Storage.Node>> entries = this.storage.entrySet().iterator();
-		while(entries.hasNext()) {
-			Entry<String, Storage.Node> e = entries.next();
-			try {e.getValue().load(o); return e.getKey();}
-			catch (IllegalStateException e1) {}
-		} throw new IllegalStateException("Warehouse is full");
+	private String loadBin(Product o, Optional<String> key) throws IllegalStateException, InstanceNotFoundException{
+		try {this.storage.get(key.get()).load(o); return key.get();}
+		catch(NullPointerException e1) {throw new InstanceNotFoundException("Bin not found");}
+		catch(NoSuchElementException ex) {
+			Iterator<Entry<String, Storage.Node>> entries = this.storage.entrySet().iterator();
+			while(entries.hasNext()) {
+				Entry<String, Storage.Node> e = entries.next();
+				try {e.getValue().load(o); return e.getKey();}
+				catch (IllegalStateException e1) {}
+			} throw new IllegalStateException("Warehouse is full");
+		}
 	}
 
 	@SuppressWarnings("unchecked")
