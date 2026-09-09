@@ -72,20 +72,18 @@ public class Warehouse<T extends Product> {
 		this.checkTS();
 		Map<String, List<T>> map  = new HashMap<String, List<T>>();
 		p.iterator().forEachRemaining(prod->{
-			try {String bin = this.put(prod);
+			try {String bin = this.put(prod, Optional.empty());
 				 map.computeIfAbsent(bin, k->new ArrayList<T>()).add(prod);}
 			catch (IllegalStateException e) {map.put(e.getMessage(), null); return;}
-			catch (IllegalArgumentException e1) {map.computeIfAbsent(_dupli, k->new ArrayList<T>()).add(prod);} }); 
+			catch (IllegalArgumentException e1) {map.computeIfAbsent(_dupli, k->new ArrayList<T>()).add(prod);}
+			catch (InstanceNotFoundException e2) {}});
 		return map;
 	}
 	
-	private String put(T b) throws IllegalStateException{
+	private String put(T b, Optional<String> bin) throws IllegalStateException, InstanceNotFoundException{
 		if(this.products.contains(b)) throw new IllegalArgumentException(b.serial+" is already in the store");
 		if(this.remainingCapacity()<1) throw new IllegalStateException("Warehouse is full");
-		String key="";
-		try {key = this.loadBin(b, Optional.empty());} catch (InstanceNotFoundException e) {}
-		this.products.add(b); 
-		return key;
+		String key = this.loadBin(b, bin); this.products.add(b); return key;
 	}
 	
 	public synchronized Map<String, List<T>> pick(int quantity) throws IndexOutOfBoundsException, IllegalStateException{
@@ -108,8 +106,7 @@ public class Warehouse<T extends Product> {
 	public synchronized Entry<String, T> pick(String serial) throws NoSuchElementException, IllegalStateException {
 		this.checkTS();
 		Entry<String, T> i = this.unloadBin(serial);
-		this.products.remove(i.getValue());
-		return i;
+		this.products.remove(i.getValue()); return i;
 	}
 	
 	public boolean check() {if(this.products.size()<this.minLevel) return false; return true;}
@@ -121,12 +118,9 @@ public class Warehouse<T extends Product> {
 		catch(NullPointerException e1) {throw new InstanceNotFoundException("Bin not found");}
 		catch(NoSuchElementException ex) {
 			Iterator<Entry<String, Storage.Node>> entries = this.storage.entrySet().iterator();
-			while(entries.hasNext()) {
-				Entry<String, Storage.Node> e = entries.next();
-				try {e.getValue().load(o); return e.getKey();}
-				catch (IllegalStateException e1) {}
-			} throw new IllegalStateException("Warehouse is full");
-		}
+			while(entries.hasNext()) { Entry<String, Storage.Node> e = entries.next();
+									   try {e.getValue().load(o); return e.getKey();} catch (IllegalStateException e1) {}} 
+			throw new IllegalStateException("Warehouse is full");}
 	}
 
 	@SuppressWarnings("unchecked")

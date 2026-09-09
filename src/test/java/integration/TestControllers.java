@@ -61,10 +61,12 @@ class TestControllers {
 	@Test
 	void testPickOneString() {
 		Vector<Bicycle> list = new Vector<Bicycle>();
-		list.add(new Bicycle("123456", 0, 590.00));
+		Bicycle a = new Bicycle("123456", 0, 590.00);
+		list.add(a);
 		list.add(new Bicycle("987565", 125, 690.00));		
 		this.admin.put(list);
-		assertTrue(this.admin.pickOne("123456").getValue().serial.equals("123456"));
+		assertTrue(this.admin.pickOne(a.serial).getValue().serial.equals("123456"));
+		assertFalse(this.admin.inventory().contains(a));
 	}
 
 	@Test

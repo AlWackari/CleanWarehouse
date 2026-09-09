@@ -11,10 +11,10 @@ jobs:
     runs-on: [self-hosted, Linux, x64, warehouse]
     steps:
       - name: Get last version of master branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK and Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'

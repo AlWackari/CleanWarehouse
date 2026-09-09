@@ -22,4 +22,4 @@ Clean Warehouse has been created to successfully implement and train the followi
 * Cloud Platform on Google
 
 ## Contributing
-Please see our [Contributing Guidelines](CONTRIBUTING.md) before opening a pull request.
+Please check the [Contributing Guidelines](./CONTRIBUTING.MD) before opening a pull request.
